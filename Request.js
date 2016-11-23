@@ -9,13 +9,15 @@ const Request = {
       xhrObject.onreadystatechange = function() {
         if(xhrObject.status >= 200 && xhrObject.status < 300) {
           if(xhrObject.readyState === 4)
-            res("The process " + url + " is done");
+            res(xhrObject.response);
         }
-        else if(xhrObject.status >= 400)
-          rej("Error on: " + url + " " + xhrObject.status);
+        else if(xhrObject.status === 404)
+          rej("404 Not Found");
         else
-          rej("Not OK!");
+          rej("fail");
       };
     });
   }
 };
+
+module.exports = Request;
