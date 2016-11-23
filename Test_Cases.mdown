@@ -4,7 +4,7 @@
 
 2) Is xhr(get) is sent to the right url ?
 
-3) When100<=Xhr.status<200 check promise rejected(“given”)
+3) When 100 <= Xhr.status < 200 check promise rejected(“given”)
 
 4) When 200 <= Xhr.status < 300 and xhr.ReadyState = 4 check promise resolved(“given”)
 
