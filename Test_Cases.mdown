@@ -10,4 +10,8 @@
 
 5) When 300 <= Xhr.status < 400 check promise rejected(“given”) 
 
-6) When Xhr.status >= 400 check promise rejected(“given”)
+6) When 400 <= Xhr.status < 500 check promise rejected(“given”)
+
+7) When 500 <= Xhr.status < 600 check promise rejected(“given”)
+
+8) When Xhr.status >= 600 check promise rejected(“given”)
