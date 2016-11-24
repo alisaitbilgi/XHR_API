@@ -1,6 +1,6 @@
 "use strict";
 
-const Request = require("./myMethod");
+const Request = require("./Request");
 const sinon = require("sinon");
 
 describe("get method tests", () => {
@@ -30,33 +30,9 @@ describe("get method tests", () => {
 
   describe("Testing Request.get() method over a fake server which responses differently", () => {
     let server;
-    let i = 0;
-    let httpStatusCode = [];
 
     beforeEach(() => {
-      switch (i) {
-        case 0 :
-          httpStatusCode[i] = 200;
-          break;
-        case 1 :
-          httpStatusCode[i] = 100;
-          break;
-        case 2 :
-          httpStatusCode[i] = 307;
-          break;
-        case 3 :
-          httpStatusCode[i] = 404;
-          break;
-        case 4 :
-          httpStatusCode[i] = 500;
-          break;
-        default:
-          httpStatusCode[i] = Math.floor((Math.random() * 400) + 600);
-          break;
-      }
       server = sinon.fakeServer.create();
-      server.respondWith("GET", "abc", [httpStatusCode[i], {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
-      i++;
     });
 
     afterEach(() => {
@@ -64,63 +40,45 @@ describe("get method tests", () => {
     });
 
     it("should return a 'resolved' promise whose value is the server's response body", () => {
-      return new Promise(resolve => {
-        Request.get("abc")
-          .then(result => {
-            resolve(result);
-          });
-        server.respond();
-      }).then(data => expect(data).toEqual('{ "id": 12, "comment": "Hey there" }'));
+      server.respondWith("GET", "abc", [200, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+      const testResult = Request.get("abc").then(data => expect(data).toEqual('{ "id": 12, "comment": "Hey there" }'));
+      server.respond();
+      return testResult;
     });
 
     it("should return a 'rejected' promise whose value is '100: Continue' ", () => {
-      return new Promise((resolve, reject) => {
-        Request.get("abc")
-          .catch(result => {
-            reject(result);
-          });
-        server.respond();
-      }).catch(data => expect(data).toEqual("100: Continue"));
+      server.respondWith([100, {"Content-Type": "text/javascript"}, "whatever"]);
+      const testResult = Request.get("bla bla").catch(data => expect(data).toEqual("100: Continue"));
+      server.respond();
+      return testResult;
     });
 
     it("should return a 'rejected' promise whose value is '307: Temporary Redirect' ", () => {
-      return new Promise((resolve, reject) => {
-        Request.get("abc")
-          .catch(result => {
-            reject(result);
-          });
-        server.respond();
-      }).catch(data => expect(data).toEqual("307: Temporary Redirect"));
+      server.respondWith([307, {"Content-Type": "text/javascript"}, "something"]);
+      const testResult = Request.get("ect.").catch(data => expect(data).toEqual("307: Temporary Redirect"));
+      server.respond();
+      return testResult;
     });
 
-    it("should return a 'rejected' promise whose value is '404 Not Found' ", () => {
-      return new Promise((resolve, reject) => {
-        Request.get("abc")
-          .catch(result => {
-            reject(result);
-          });
-        server.respond();
-      }).catch(data => expect(data).toEqual("404: Not Found"));
+    it("should return a 'rejected' promise whose value is '404: Not Found' ", () => {
+      server.respondWith([404, {"Content-Type": "text/javascript"}, "  "]);
+      const testResult = Request.get("any").catch(data => expect(data).toEqual("404: Not Found"));
+      server.respond();
+      return testResult;
     });
 
     it("should return a 'rejected' promise whose value is '500: Internal Server Error' ", () => {
-      return new Promise((resolve, reject) => {
-        Request.get("abc")
-          .catch(result => {
-            reject(result);
-          });
-        server.respond();
-      }).catch(data => expect(data).toEqual("500: Internal Server Error"));
+      server.respondWith([500, {"Content-Type": "text/javascript"}, "bla bla"]);
+      const testResult = Request.get("null").catch(data => expect(data).toEqual("500: Internal Server Error"));
+      server.respond();
+      return testResult;
     });
 
     it("should return a 'rejected' promise whose value is 'Process Failed' ", () => {
-      return new Promise((resolve, reject) => {
-        Request.get("abc")
-          .catch(result => {
-            reject(result);
-          });
-        server.respond();
-      }).catch(data => expect(data).toEqual("Process Failed"));
+      server.respondWith([Math.floor((Math.random() * 1000) + 600), {"Content-Type": "text/javascript"}, "?*/"]);
+      const testResult = Request.get("whatever").catch(data => expect(data).toEqual("Process Failed"));
+      server.respond();
+      return testResult;
     });
 
   });
