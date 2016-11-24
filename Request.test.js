@@ -14,9 +14,7 @@ describe("get method tests", () => {
         send
       };
     };
-    beforeAll(() => {
-      window.XMLHttpRequest = jest.fn().mockImplementation(xhrMockClass);
-    });
+    window.XMLHttpRequest = jest.fn().mockImplementation(xhrMockClass);
 
     it("should create an XMLHttpRequest", () => {
       Request.get("whatever");
