@@ -35,24 +35,24 @@ describe("get method tests", () => {
 
     beforeEach(() => {
       switch (i) {
-      case 0 :
-        httpStatusCode[i] = 200;
-        break;
-      case 1 :
-        httpStatusCode[i] = 100;
-        break;
-      case 2 :
-        httpStatusCode[i] = 307;
-        break;
-      case 3 :
-        httpStatusCode[i] = 404;
-        break;
-      case 4 :
-        httpStatusCode[i] = 500;
-        break;
-      default:
-        httpStatusCode[i] = Math.floor((Math.random() * 400) + 600);
-        break;
+        case 0 :
+          httpStatusCode[i] = 200;
+          break;
+        case 1 :
+          httpStatusCode[i] = 100;
+          break;
+        case 2 :
+          httpStatusCode[i] = 307;
+          break;
+        case 3 :
+          httpStatusCode[i] = 404;
+          break;
+        case 4 :
+          httpStatusCode[i] = 500;
+          break;
+        default:
+          httpStatusCode[i] = Math.floor((Math.random() * 400) + 600);
+          break;
       }
       server = sinon.fakeServer.create();
       server.respondWith("GET", "abc", [httpStatusCode[i], {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
