@@ -1,6 +1,6 @@
 "use strict";
 
-const Request = require("./myMethod");
+const Request = require("./Request");
 const sinon = require("sinon");
 
 describe("Testing", () => {
