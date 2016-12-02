@@ -1,55 +1,43 @@
 "use strict";
 
-const Request = {
-  get: function (url) {
-    return new Promise((res, rej) => {
-      const xhrObject = new XMLHttpRequest();
-      xhrObject.open("GET", url, true);
-      xhrObject.send();
-      xhrObject.onreadystatechange = function() {
-        const status = xhrObject.status;
-        if(status >= 200 && status < 300) {
-          if(xhrObject.readyState === 4)
-            res(xhrObject.response);
-        }
-        else if(status >= 100 && status < 200)
-          rej(status + ": Continue");
-        else if(status >= 300 && status < 400)
-          rej(status + ": Temporary Redirect");
-        else if(status >= 400 && status < 500)
-          rej(status + ": Not Found");
-        else if(status >= 500 && status < 600)
-          rej(status + ": Internal Server Error");
-        else
-          rej("Process Failed");
-      };
-    });
-  },
+const handler = {
+  get: function (target, name) {
+    return name in target ? target[name] : function (url, data) {
+      let method = name.toUpperCase();
+      if (!data)
+        data = null;
+      if(!url)
+        url = "";
+      return new Promise((res, rej) => {
+        const xhrObject = new XMLHttpRequest();
+        xhrObject.open(method, url, true);
+        xhrObject.send(data);
+        xhrObject.onload = function () {
+          let responseObject = {
+            RequestURL: url,
+            RequestMethod: method,
+            StatusCode: xhrObject.status,
+            RequestPayload: data
+          };
 
-  post: function (url, data) {
-    return new Promise((res, rej) => {
-      const xhrObject = new XMLHttpRequest();
-      xhrObject.open("POST", url, true);
-      xhrObject.send(data);
-      xhrObject.onreadystatechange = function() {
-        const status = xhrObject.status;
-        if(xhrObject.status >= 200 && xhrObject.status < 300) {
-          if(xhrObject.readyState === 4)
-            res(data);
-        }
-        else if(status >= 100 && status < 200)
-          rej(status + ": Continue");
-        else if(status >= 300 && status < 400)
-          rej(status + ": Temporary Redirect");
-        else if(status >= 400 && status < 500)
-          rej(status + ": Not Found");
-        else if(status >= 500 && status < 600)
-          rej(status + ": Internal Server Error");
-        else
-          rej("Process Failed");
-      };
-    });
+          if (data === null)
+            delete responseObject.RequestPayload;
+
+          if (xhrObject.status >= 200 && xhrObject.status < 300) {
+            res(responseObject);
+          }
+          else if (xhrObject.status >= 400)
+            rej("404 Not Found");
+          else
+            rej("Process Failed " + xhrObject.status);
+        };
+        xhrObject.onerror = function (e) {
+          rej("There is a failure on the network level");
+        };
+      });
+    };
   }
 };
+const Request = new Proxy({}, handler);
 
 module.exports = Request;
