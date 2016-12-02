@@ -1,7 +1,8 @@
-In this work, I've implemented a Request object which has 2 methods, "get" and "post" that returns a promise 
-according to response's of the requests. By implementing this, I've aimed to provide a practical usage of XMLHttpRequest 
-and promises. When it's typed  'Request.get(url)' or 'Request.post(url,data)' the API fetchs/posts the related data asynchronously from/to given url and returns a resolved promise with the value of responded data if the process is successful. If not, the API returns a rejected promise with whose value is the reason of failure.
+   In this work, I've implemented a Request object which is a 'proxy object' that returns a promise 
+according to response's of the requests. You can easly make an asynchronous request by using any http verbs with my Request proxy object by just typing for instance Request.head(param1, param2) or Request.put(param1, param2) or any other http verbs.
+Two parameters are optional, you can type any number of and any types of parameters according to your request needs. For general usage parameters refers to: param1 = url  ,  param2 = data.
+   By implementing this, I've aimed to provide a practical usage of XMLHttpRequest and promises. When it's typed  'Request.get(url)' or 'Request.post(url,data)' or any others, the API fetches/posts the related data asynchronously from/to given url and returns a resolved promise with the value of responded data if the process is successful. If not, the API returns a rejected promise whose value is the reason of the failure.
 
 Tests which are implemented by using JEST framework, stays in Request.test.js file.
 
-To use this, just download the repo and then type npm install...
+To use this API, just download the repo and then type npm install...
