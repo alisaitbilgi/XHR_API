@@ -9,9 +9,8 @@ function xhrMockClass() {
   return {open, send};
 }
 
-describe(" Request.get() method over", () => {
-
-  describe(" 1)XMLHttpRequest behaviours: the API should ", () => {
+describe("Cases of the API over ", () => {
+  describe("XMLHttpRequest behaviours: the API should ", () => {
 
     beforeAll(() => {
       open = jest.fn();
@@ -24,8 +23,28 @@ describe(" Request.get() method over", () => {
       window.XMLHttpRequest = temp;
     });
 
-    it("create an XMLHttpRequest", () => {
-      Request.get("whatever");
+    it("create an XMLHttpRequest for 'put' request even with one parameter", () => {
+      Request.put("whatever");
+      expect(send).toHaveBeenCalled();
+    });
+
+    it("create an XMLHttpRequest for 'delete' request even with no parameter", () => {
+      Request.delete();
+      expect(send).toHaveBeenCalled();
+    });
+
+    it("create an XMLHttpRequest for 'options' request with two parameters", () => {
+      Request.options("whereever", "abc");
+      expect(send).toHaveBeenCalled();
+    });
+
+    it("create an XMLHttpRequest for any request even if they're undefined http verbs with one parameter", () => {
+      Request.whatever("whereever");
+      expect(send).toHaveBeenCalled();
+    });
+
+    it("create an XMLHttpRequest for any request even with extra parameters", () => {
+      Request.which("whereever", {}, {}, "");
       expect(send).toHaveBeenCalled();
     });
 
@@ -34,9 +53,29 @@ describe(" Request.get() method over", () => {
       expect(open).toHaveBeenCalledWith("GET", "abc", true);
     });
 
+    it("call an XMLHttpRequest with 'post' method and with no parameter ", () => {
+      Request.post();
+      expect(open).toHaveBeenCalledWith("POST", "", true);
+    });
+
+    it("call an XMLHttpRequest with a method which is undefined with given url ", () => {
+      Request.smth("any");
+      expect(open).toHaveBeenCalledWith("SMTH", "any", true);
+    });
+
+    it("not call an XMLHttpRequest to a wrong url with any method(either defined or undefined)", () => {
+      Request.post("abc");
+      expect(open).not.toHaveBeenCalledWith("POST", "klm", true);
+    });
+
+    it("not call an XMLHttpRequest with a incompatible request type with any method(either defined or undefined)", () => {
+      Request.get("abc");
+      expect(open).not.toHaveBeenCalledWith("HEAD", "klm", true);
+    });
+
   });
 
-  describe(" 2)a fake server, when it responses", () => {
+  describe("a fake server, when it responses", () => {
 
     beforeAll(() => {
       jsonObject = {"aracArray": [{"YEAR": 2009, "CATEGORY": "coupe", "PRICE": 820000, "LPG": false}]};
@@ -47,145 +86,90 @@ describe(" Request.get() method over", () => {
       server.restore();
     });
 
-    describe("  successful: the API should return a", () => {
+    describe("successful: the API should return a", () => {
 
-      it("'resolved' promise whose value is the server's response body", () => {
+      it("'resolved' promise whose value is an object which shows truly matched url,method,status and data of the 'GET' operation if data is a json object", () => {
         server.respondWith("GET", "abc", [200, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
-        const testResult = Request.get("abc").then(data => expect(data).toEqual('{ "id": 12, "comment": "Hey there" }'));
+        const testResult = Request.get("abc", jsonObject).then(data => expect(data).toEqual({
+          RequestURL: "abc",
+          RequestMethod: "GET",
+          StatusCode: 200,
+          RequestPayload: jsonObject
+        }));
+        server.respond();
+        return testResult;
+      });
+
+      it("'resolved' promise whose value is an object which shows url, method and status of the 'POST' operation if method is called with one parameter", () => {
+        server.respondWith("POST", "abc", [200, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.post("abc").then(data => expect(data).toEqual({
+          RequestURL: "abc",
+          RequestMethod: "POST",
+          StatusCode: 200
+        }));
+        server.respond();
+        return testResult;
+      });
+
+      it("'resolved' promise whose value is an object which shows truly matched url, method,status and data of the 'HEAD' operation if data is a string ", () => {
+        server.respondWith("HEAD", "abc", [200, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.head("abc", "blabla").then(data => expect(data).toEqual({
+          RequestURL: "abc",
+          RequestMethod: "HEAD",
+          StatusCode: 200,
+          RequestPayload: "blabla"
+        }));
+        server.respond();
+        return testResult;
+      });
+
+      it("'rejected' promise whose value is '404 Not Found' if the user requested with no parameters with connect method ", () => {
+        server.respondWith("CONNECT", "abc", [200, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.connect().catch(data => expect(data).toEqual("404 Not Found"));
+        server.respond();
+        return testResult;
+      });
+
+      it("'rejected' promise whose value is '404 Not Found' if the user requested with an undefined http method with extra parameters ", () => {
+        server.respondWith("PUT", "abc", [200, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.blabla("abc", 5, {}).catch(data => expect(data).toEqual("404 Not Found"));
         server.respond();
         return testResult;
       });
 
     });
 
-    describe("  not successful: the API should return a", () => {
+    describe("not successful: the API should return a", () => {
 
-      it("'rejected' promise whose value is '100: Continue' ", () => {
-        server.respondWith([100, {"Content-Type": "text/javascript"}, "whatever"]);
-        const testResult = Request.get("bla bla").catch(data => expect(data).toEqual("100: Continue"));
+      it("'rejected' promise whose value is '404 not found' if server response with 'client error' ", () => {
+        server.respondWith("TRACE", "abc", [404, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.trace("abc", jsonObject).catch(data => expect(data).toEqual("404 Not Found"));
         server.respond();
         return testResult;
       });
 
-      it("'rejected' promise whose value is '307: Temporary Redirect' ", () => {
-        server.respondWith([307, {"Content-Type": "text/javascript"}, "-953"]);
-        const testResult = Request.get("ect.").catch(data => expect(data).toEqual("307: Temporary Redirect"));
+      it("'rejected' promise whose value is '404 not found' if server response with 'server error' ", () => {
+        server.respondWith("TRACE", "abc", [502, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.trace("abc", jsonObject).catch(data => expect(data).toEqual("404 Not Found"));
         server.respond();
         return testResult;
       });
 
-      it("'rejected' promise whose value is '404: Not Found' ", () => {
-        server.respondWith([404, {"Content-Type": "text/javascript"}, " {}"]);
-        const testResult = Request.get("any").catch(data => expect(data).toEqual("404: Not Found"));
+      it("'rejected' promise whose value is 'Process Failed 301' if server response with 'moved permamently' ", () => {
+        server.respondWith("TRACE", "abc", [301, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.trace("abc", jsonObject).catch(data => expect(data).toEqual("Process Failed 301"));
         server.respond();
         return testResult;
       });
 
-      it("'rejected' promise whose value is '500: Internal Server Error' ", () => {
-        server.respondWith([500, {"Content-Type": "text/javascript"}, "[]"]);
-        const testResult = Request.get("null").catch(data => expect(data).toEqual("500: Internal Server Error"));
-        server.respond();
-        return testResult;
-      });
-
-      it("'rejected' promise whose value is 'Process Failed' ", () => {
-        server.respondWith([Math.floor((Math.random() * 1000) + 600), {"Content-Type": "text/javascript"}, "?*/"]);
-        const testResult = Request.get("whatever").catch(data => expect(data).toEqual("Process Failed"));
-        server.respond();
-        return testResult;
-      });
-
-    });
-  });
-});
-
-describe(" Request.post() method over ", () => {
-
-  describe(" 1)XMLHttpRequest behaviours: the API should ", () => {
-
-    beforeAll(() => {
-      open = jest.fn();
-      send = jest.fn();
-      temp = window.XMLHttpRequest;
-      window.XMLHttpRequest = jest.fn().mockImplementation(xhrMockClass);
-    });
-
-    afterAll(() => {
-      window.XMLHttpRequest = temp;
-    });
-
-    it("should create an XMLHttpRequest", () => {
-      Request.post("whatever", "smth");
-      expect(send).toBeCalled();
-    });
-
-    it("should call an XMLHttpRequest with 'POST' method and with given 'url' ", () => {
-      Request.post("whatever", "smth");
-      expect(open).toBeCalledWith("POST", "whatever", true);
-    });
-
-  });
-
-  describe(" 2)a fake server, when it responses", () => {
-
-    beforeAll(() => {
-      jsonObject = {"aracArray": [{"YEAR": 2009, "CATEGORY": "coupe", "PRICE": 820000, "LPG": false}]};
-      server = sinon.fakeServer.create();
-    });
-
-    afterAll(() => {
-      server.restore();
-    });
-
-    describe("  successful: the API should return a", () => {
-
-      it("'resolved' promise whose value is the data which is posted", () => {
-        server.respondWith("POST", "abc", [200, {"Content-Type": "text/javascript"}, "SUCCESS"]);
-        const testResult = Request.post("abc", jsonObject)
-          .then(data => expect(data).toEqual({"aracArray": [{"YEAR": 2009, "CATEGORY": "coupe", "PRICE": 820000, "LPG": false}]}));
+      it("'rejected' promise whose value is 'Process Failed 102' if server response with 'moved permamently' ", () => {
+        server.respondWith("TRACE", "abc", [102, {"Content-Type": "text/javascript"}, '{ "id": 12, "comment": "Hey there" }']);
+        const testResult = Request.trace("abc", jsonObject).catch(data => expect(data).toEqual("Process Failed 102"));
         server.respond();
         return testResult;
       });
 
     });
 
-    describe("  not successful: the API should return a", () => {
-
-      it("'rejected' promise whose value is '100: Continue' ", () => {
-        server.respondWith("POST", "whatever", [100, {"Content-Type": "text/javascript"}, "whatever"]);
-        const testResult = Request.post("whatever", "something").catch(data => expect(data).toEqual("100: Continue"));
-        server.respond();
-        return testResult;
-      });
-
-      it("'rejected' promise whose value is '307: Temporary Redirect' ", () => {
-        server.respondWith("POST", "somewhere", [307, {"Content-Type": "text/javascript"}, "something"]);
-        const testResult = Request.post("somewhere", 555).catch(data => expect(data).toEqual("307: Temporary Redirect"));
-        server.respond();
-        return testResult;
-      });
-
-      it("'rejected' promise whose value is '404: Not Found' ", () => {
-        server.respondWith("POST", "goooogle.kom", [404, {"Content-Type": "text/javascript"}, "  "]);
-        const testResult = Request.post("goooogle.kom", [5, 6]).catch(data => expect(data).toEqual("404: Not Found"));
-        server.respond();
-        return testResult;
-      });
-
-      it("'rejected' promise whose value is '500: Internal Server Error' ", () => {
-        server.respondWith("POST", "feysbuk", [500, {"Content-Type": "text/javascript"}, "No matter the response"]);
-        const testResult = Request.post("feysbuk", {}).catch(data => expect(data).toEqual("500: Internal Server Error"));
-        server.respond();
-        return testResult;
-      });
-
-      it("'rejected' promise whose value is 'Process Failed' ", () => {
-        server.respondWith("POST", "teveter", [Math.floor((Math.random() * 1000) + 600), {"Content-Type": "text/javascript"}, "?*/"]);
-        const testResult = Request.post("teveter", "?/*").catch(data => expect(data).toEqual("Process Failed"));
-        server.respond();
-        return testResult;
-      });
-
-    });
   });
 });
