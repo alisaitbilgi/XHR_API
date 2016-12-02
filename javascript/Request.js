@@ -22,12 +22,13 @@ const handler = {
 
           if (data === null)
             delete responseObject.RequestPayload;
-
-          if (xhrObject.status >= 200 && xhrObject.status < 300) {
+          
+          if (xhrObject.status >= 200 && xhrObject.status < 300)
             res(responseObject);
-          }
+         
           else if (xhrObject.status >= 400)
             rej("404 Not Found");
+          
           else
             rej("Process Failed " + xhrObject.status);
         };
