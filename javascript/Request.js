@@ -9,30 +9,30 @@ const handler = {
       if(!url)
         url = "";
       return new Promise((res, rej) => {
-        const xhrObject = new XMLHttpRequest();
-        xhrObject.open(method, url, true);
-        xhrObject.send(data);
-        xhrObject.onload = function () {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.send(data);
+        xhr.onload = function () {
           let responseObject = {
             RequestURL: url,
             RequestMethod: method,
-            StatusCode: xhrObject.status,
+            StatusCode: xhr.status,
             RequestPayload: data
           };
 
           if (data === null)
             delete responseObject.RequestPayload;
           
-          if (xhrObject.status >= 200 && xhrObject.status < 300)
+          if (xhr.status >= 200 && xhr.status < 300)
             res(responseObject);
          
-          else if (xhrObject.status >= 400)
+          else if (xhr.status >= 400)
             rej("404 Not Found");
           
           else
-            rej("Process Failed " + xhrObject.status);
+            rej("Process Failed " + xhr.status);
         };
-        xhrObject.onerror = function (e) {
+        xhr.onerror = function (e) {
           rej("There is a failure on the network level");
         };
       });
