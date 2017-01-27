@@ -2,12 +2,8 @@
 
 const handler = {
   get: function (target, name) {
-    return name in target ? target[name] : function (url, data) {
+    return name in target ? target[name] : function (url="", data) {
       let method = name.toUpperCase();
-      if (!data)
-        data = null;
-      if(!url)
-        url = "";
       return new Promise((res, rej) => {
         const xhr = new XMLHttpRequest();
         xhr.open(method, url, true);
