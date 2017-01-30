@@ -1,6 +1,5 @@
 "use strict";
 
-
 const handler = {
     get: function (target, name) {
         return name in target ? target[name] : function (url="", data) {
@@ -28,3 +27,5 @@ const handler = {
 };
 
 const Request = new Proxy({}, handler);
+
+module.exports = {Request};
