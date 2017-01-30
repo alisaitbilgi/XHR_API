@@ -9,7 +9,6 @@ const handler = {
                     xhr.open(method, url, true);
                     xhr.send(data);
                     xhr.onload = function () {
-                        const status = xhr.status;
                         if (status >= 200 && status < 300) {
                             res(xhr.response);
                         } else if (status >= 400) {
