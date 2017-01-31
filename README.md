@@ -7,4 +7,4 @@ Two parameters are optional, you can type any number of and any types of paramet
 
 Tests which are implemented by using JEST framework, stays in Request.test.js file.
 
-To use this API, just download the repo and then type npm install...
+To use this API, just download the repo and apply to your related project.
