@@ -9,10 +9,10 @@ const handler = {
                     xhr.open(method, url, true);
                     xhr.send(data);
                     xhr.onload = function () {
-                        if (status >= 200 && status < 300) {
+                        if (xhr.status >= 200 && xhr.status < 300) {
                             res(xhr.response);
-                        } else if (status >= 400) {
-                            rej(xhr.response);
+                        } else if (xhr.status >= 400) {
+                            res(xhr.response);
                         } else {
                             res(xhr.response);
                         }
