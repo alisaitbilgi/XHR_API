@@ -20,3 +20,5 @@ Two parameters are optional, you can type any number of and any types of paramet
     
     Request.get("https://api.github.com/users/alisaitbilgi")
       .then(resolvedResult => console.log(resolvedResult));
+      
+      // api will print response of the server.
