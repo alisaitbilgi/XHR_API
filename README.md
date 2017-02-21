@@ -12,6 +12,11 @@ Two parameters are optional, you can type any number of and any types of paramet
    
    It is an npm published API so you you can download it from npm by just typing:
    
-   
-    
     $ npm install genericxhr --save
+    
+    Example Usage:
+    
+    import {Request} from "genericxhr/Request";
+    
+    Request.get("https://api.github.com/users/alisaitbilgi")
+      .then(resolvedResult => console.log(resolvedResult));
