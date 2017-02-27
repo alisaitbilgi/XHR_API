@@ -12,11 +12,11 @@ Two parameters are optional, you can type any number of and any types of paramet
    
    It is an npm published API so you can download it just by typing:
    
-    $ npm install genericxhr --save
+    $ npm install ez-fetch-ajax --save-dev
     
     Example Usage:
     
-    import {Request} from "genericxhr/Request";
+    import {Request} from "ez-fetch-ajax";
     
     Request.get("https://api.github.com/users/alisaitbilgi")
       .then(resolvedResult => console.log(resolvedResult));
